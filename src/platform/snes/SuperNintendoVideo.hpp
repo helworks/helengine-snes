@@ -12,7 +12,7 @@ constexpr uint16_t Bg1CharacterWordAddress = 0x1000;
 
 /// Thin PPU backend for the boot ROM: register setup, palette writes, VRAM
 /// uploads over DMA channel 0, and VBlank synchronisation through the NMI.
-/// Every write here happens while the screen is force-blanked or during
+/// Every write here must happen while the screen is force-blanked or during
 /// VBlank, which is the only time VRAM and CGRAM are safe to touch.
 class SuperNintendoVideo {
 public:
@@ -25,6 +25,7 @@ public:
 
     /// Copies byteCount bytes from near memory (ROM or WRAM in bank 0) to
     /// VRAM starting at the given word address, using DMA channel 0.
+    /// byteCount must be even and non-zero; zero is a no-op.
     void UploadVram(uint16_t wordAddress, const void* source, uint16_t byteCount);
 
     /// Enables the VBlank NMI so the frame counter starts advancing.
@@ -34,6 +35,10 @@ public:
     void ScreenOn();
 
     /// Blocks until the NMI handler has counted one more frame.
+    /// Precondition: EnableVBlankInterrupt() has been called; otherwise this
+    /// never returns. Do not use the SDK's snes_wait_vblank() alongside this
+    /// class: the NMI handler read-clears RDNMI, so that helper never sees
+    /// the flag.
     void WaitForVBlank();
 
     /// Number of VBlank interrupts seen since boot, wrapping at 16 bits.

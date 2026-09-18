@@ -18,6 +18,12 @@ namespace helengine::snes {
 
 bool SuperNintendoVideo::Initialize() {
     snes_ppu_reset_blank();
+    // BG1HOFS/BG1VOFS are write-twice ports (low byte, then high bits); the
+    // single write in snes_ppu_reset_blank leaves the power-on latch in the
+    // low bits, so write each twice to pin the scroll at 0.
+    REG_BG1HOFS = 0; REG_BG1HOFS = 0;
+    REG_BG1VOFS = 0; REG_BG1VOFS = 0;
+    REG_HDMAEN = 0;
     REG_BGMODE = BGMODE_1;
     REG_BG1SC = SNES_BGSC(Bg1TilemapWordAddress, 0);
     // BG12NBA bits 3-0 select BG1's character base in 4K-word units.
@@ -33,16 +39,19 @@ void SuperNintendoVideo::WritePalette(uint8_t index, uint16_t bgr555) {
 }
 
 void SuperNintendoVideo::UploadVram(uint16_t wordAddress, const void* source, uint16_t byteCount) {
+    if (byteCount == 0) { return; }
     REG_VMAIN = VMAIN_INC_HIGH_1;
     REG_VMADD = wordAddress;
     REG_DMAP0 = DMAP_TO_PPU | DMAP_ADDR_INC | DMAP_UNIT_2;
     REG_BBAD0 = BBAD_VMDATA;
-    // Near pointers are 16-bit bank-0 addresses on this platform: ROM at
-    // $8000-$FFFF and low WRAM at $0000-$1FFF, both reachable by DMA from bank 0.
-    const uint16_t address = static_cast<uint16_t>(reinterpret_cast<uintptr_t>(source));
+    // Near pointers are bank 0 on the `snes` platform: ROM at $8000-$FFFF and
+    // low WRAM at $0000-$1FFF, both reachable by DMA from bank 0. Far
+    // platforms carry the bank in bits 16-23 of the pointer, so take the DMA
+    // source bank from the pointer itself rather than hardcoding it.
+    const uint32_t address = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(source));
     REG_A1T0L = static_cast<uint8_t>(address);
     REG_A1T0H = static_cast<uint8_t>(address >> 8);
-    REG_A1B0 = 0x00;
+    REG_A1B0 = static_cast<uint8_t>(address >> 16);
     REG_DAS0L = static_cast<uint8_t>(byteCount);
     REG_DAS0H = static_cast<uint8_t>(byteCount >> 8);
     REG_MDMAEN = 0x01;

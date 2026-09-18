@@ -1,11 +1,12 @@
 .DEFAULT_GOAL := all
+.DELETE_ON_ERROR:
 
 TARGET := helengine_snes
 BUILD_DIR := build
 ROM_TITLE := HELENGINE SNES
 
 CXX := mos-snes-clang++
-CXXFLAGS := -std=c++20 -fno-exceptions -fno-rtti -Os -Wall -Wextra -Isrc -MMD -MP
+CXXFLAGS := -std=c++20 -fno-exceptions -fno-rtti -Os -Wall -Wextra -Werror -Isrc -MMD -MP
 
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/platform/snes/*.cpp)
 OBJECTS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
@@ -30,7 +31,7 @@ $(RAW_ROM): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -Wl,-Map,$(MAP) -o $@ $(OBJECTS)
 	mv $@.elf $(ELF)
 
-$(ROM): $(RAW_ROM) tools/finalize_rom.py
+$(ROM): $(RAW_ROM) tools/finalize_rom.py tools/validate_rom.py
 	python3 tools/finalize_rom.py --title "$(ROM_TITLE)" $(RAW_ROM) $@
 	python3 tools/validate_rom.py --title "$(ROM_TITLE)" $@
 

@@ -19,16 +19,21 @@ if (-not (Test-Path -LiteralPath $portableSettings)) {
 }
 
 # Resolve the frame counter's WRAM address from the linker map so the Lua
-# check can prove the VBlank NMI is firing. 0 disables that part of the check.
+# check can prove the VBlank NMI is firing. The symbol must be found; a
+# missing map or symbol means the check cannot prove anything, so it is fatal.
 $mapPath = Join-Path $root 'build\helengine_snes.map'
+if (-not (Test-Path -LiteralPath $mapPath)) {
+    throw "Linker map not found: $mapPath; run the build first."
+}
 $counterAddress = 0
-if (Test-Path -LiteralPath $mapPath) {
-    foreach ($line in Get-Content -LiteralPath $mapPath) {
-        if ($line -match '^\s*([0-9a-fA-F]+)\s+[0-9a-fA-F]+\s+[0-9a-fA-F]+\s+\d+\s+HelengineSnesFrameCounter\s*$') {
-            $counterAddress = [Convert]::ToInt32($Matches[1], 16)
-            break
-        }
+foreach ($line in Get-Content -LiteralPath $mapPath) {
+    if ($line -match '^\s*([0-9a-fA-F]+)\s+[0-9a-fA-F]+\s+[0-9a-fA-F]+\s+\d+\s+HelengineSnesFrameCounter\s*$') {
+        $counterAddress = [Convert]::ToInt32($Matches[1], 16)
+        break
     }
+}
+if ($counterAddress -eq 0) {
+    throw "Frame counter symbol HelengineSnesFrameCounter not found in $mapPath; run the build first."
 }
 
 $template = Get-Content -LiteralPath (Join-Path $root 'tools\mesen\red_square_check.lua') -Raw
@@ -46,6 +51,7 @@ switch ($code) {
     2 { Write-Output 'RESULT=fail (Lua error inside the check)' }
     3 { Write-Output 'RESULT=fail (wrong colours)' }
     4 { Write-Output 'RESULT=fail (frame counter did not advance; NMI not firing)' }
+    5 { Write-Output 'RESULT=fail (frame counter address unresolved)' }
     default { Write-Output "RESULT=fail (MesenCE exit code $code; timeout or ROM did not load)" }
 }
 exit $code

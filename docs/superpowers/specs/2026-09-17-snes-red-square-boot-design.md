@@ -21,7 +21,7 @@ FastROM.
 | Decision | Choice | Reason |
 |---|---|---|
 | Compiler | llvm-mos-65816 preview toolchain (clang + lld + SNES SDK) | Only 65816 toolchain that compiles C++, which helengine's C# to C++ codegen requires. PVSnesLib's 816-tcc is C only. |
-| Language | C++20, no exceptions, no RTTI, freestanding | Matches the other handlers' `-std=gnu++20` and the generated core's needs while staying inside what the 65816 backend supports. |
+| Language | C++20, no exceptions, no RTTI, freestanding | Same C++20 level as the other handlers (they use `-std=gnu++20`; this handler uses strict `-std=c++20` until the generated core shows it needs GNU extensions) and the generated core's needs while staying inside what the 65816 backend supports. |
 | Host build | Docker on a digest-pinned Ubuntu 24.04 image with the Linux x86-64 `.deb` package | Same pattern as the DS and N64 handlers. The Windows toolchain zip is untested upstream. |
 | SDK platform | `snes` (LoROM, one 32 KiB bank, near-only code) | Simplest mapping. `snes-far` and `snes-hirom` remain available when the generated core needs more ROM. |
 | Cartridge | LoROM, SlowROM, no enhancement chip, no SRAM | Smallest test matrix, as recommended in `docs/SuperNintendoDevelopment.md`. |

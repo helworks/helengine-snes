@@ -9,7 +9,8 @@ Background reading: `docs/SuperNintendoDevelopment.md`, `docs/super-nintendo-cpp
 
 ## One-time setup
 
-Requires Docker Desktop and PowerShell.
+Requires Docker Desktop, PowerShell and Python 3 on `PATH` (the build script
+validates the ROM on the host and the tool tests run on the host).
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-toolchain.ps1
@@ -33,6 +34,9 @@ Runs `make` in the container and writes:
 
 `make` finalizes the title and checksum with `tools/finalize_rom.py` and
 refuses to finish unless `tools/validate_rom.py` passes.
+
+`scripts/build.ps1 -Clean` runs `make clean` first; two clean builds must give
+the same ROM SHA-256.
 
 ## Check in an emulator
 
