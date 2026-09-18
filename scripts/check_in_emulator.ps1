@@ -35,7 +35,7 @@ $template = Get-Content -LiteralPath (Join-Path $root 'tools\mesen\red_square_ch
 $generatedDir = Join-Path $root 'build'
 New-Item -ItemType Directory -Force -Path $generatedDir | Out-Null
 $generatedLua = Join-Path $generatedDir 'red_square_check.generated.lua'
-$template.Replace('__FRAME_COUNTER_ADDRESS__', [string]$counterAddress) | Set-Content -LiteralPath $generatedLua -Encoding ascii
+[System.IO.File]::WriteAllText($generatedLua, $template.Replace('__FRAME_COUNTER_ADDRESS__', [string]$counterAddress), (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Output "ROM=$rom"
 Write-Output "FRAME_COUNTER_ADDRESS=0x$($counterAddress.ToString('X4'))"
