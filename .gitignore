@@ -1,0 +1,12 @@
+# Downloaded toolchain package and other local dependency scratch.
+.deps/
+
+# Build outputs.
+build/
+*.sfc
+*.elf
+*.map
+
+# Local tool and emulator state.
+*.log
+*.tmp

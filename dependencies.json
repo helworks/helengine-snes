@@ -1,0 +1,12 @@
+{
+    "toolchain":  {
+                      "baseImage":  "ubuntu@sha256:69cecf4bbf72d2d44a9eef1b71fb98c7fb973d78af11399deccef19beb008ad9",
+                      "package":  {
+                                      "url":  "https://apt.indri.studio/pool/main/l/llvm-mos-65816/llvm-mos-65816_0.0.0+git20260914.f9711be_amd64.deb",
+                                      "fileName":  "llvm-mos-65816_0.0.0+git20260914.f9711be_amd64.deb",
+                                      "sha256":  "6485bf206b2db2f46c234e05204d0b51f2fa1949d5575d2022af3a62db4e84ac"
+                                  },
+                      "toolchainImage":  "sha256:4ae0f74c06a883795dcb35280ff9a99e5d681f56c870cefd7f62de2bab7c6504",
+                      "compilerVersion":  "clang version 23.0.0git (https://github.com/llvm-mos/llvm-mos.git 8be0546128a55e78c63ca571d466aa72a782cd36)"
+                  }
+}
