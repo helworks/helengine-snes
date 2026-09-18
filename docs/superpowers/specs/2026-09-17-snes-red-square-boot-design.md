@@ -79,8 +79,8 @@ carries the title `LLVM-MOS SNES` and leaves the checksum fields at
 `helengine_snes.sfc` at the repository root. The ROM is headerless: no
 512-byte copier prefix.
 
-`scripts/build.ps1` builds the `helengine-snes-build` image from the Dockerfile,
-runs `make` in the container with the repository mounted at `/workspace`,
+`scripts/build.ps1` runs `make` in the `helengine-snes-toolchain` container
+with the repository mounted at `/workspace`,
 fails if the ROM, ELF or map is missing or empty, runs `tools/validate_rom.py`,
 and writes `build/build-record.json` with the ROM SHA-256, sizes, Docker image
 ids and the dependency pins.

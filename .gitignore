@@ -6,6 +6,7 @@ build/
 *.sfc
 *.elf
 *.map
+__pycache__/
 
 # Local tool and emulator state.
 *.log
