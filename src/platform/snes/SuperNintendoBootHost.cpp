@@ -1,16 +1,25 @@
 #include "platform/snes/SuperNintendoBootHost.hpp"
 
+#include "platform/snes/SuperNintendoRedSquareScene.hpp"
+
 #include <snes.h>
 
 namespace helengine::snes {
 
 int SuperNintendoBootHost::Run() {
-    snes_ppu_reset_blank();
-    REG_CGADD = 0;
-    REG_CGDATA = static_cast<uint8_t>(SNES_RGB(0, 0, 0));
-    REG_CGDATA = static_cast<uint8_t>(SNES_RGB(0, 0, 0) >> 8);
-    REG_INIDISP = INIDISP_ON;
+    if (!Video.Initialize()) {
+        return 1;
+    }
+    Video.WritePalette(0, SNES_RGB(0, 0, 0));
+    Video.WritePalette(1, SNES_RGB(31, 0, 0));
+    Video.UploadVram(Bg1CharacterWordAddress, SuperNintendoRedSquareScene::Tiles(),
+                     SuperNintendoRedSquareScene::TileByteCount);
+    Video.UploadVram(Bg1TilemapWordAddress, SuperNintendoRedSquareScene::TilemapEntries(),
+                     SuperNintendoRedSquareScene::TilemapByteCount);
+    Video.EnableVBlankInterrupt();
+    Video.ScreenOn();
     for (;;) {
+        Video.WaitForVBlank();
     }
 }
 
