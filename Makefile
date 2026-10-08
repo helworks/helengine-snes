@@ -3,23 +3,24 @@
 
 TARGET := helengine_snes
 BUILD_DIR := build
+OBJECT_ROOT ?= $(BUILD_DIR)/obj
 ROM_TITLE := HELENGINE SNES
 
 CXX := mos-snes-clang++
 CXXFLAGS := -std=c++20 -fno-exceptions -fno-rtti -Os -Wall -Wextra -Werror -Isrc -MMD -MP
 
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/platform/snes/*.cpp)
-OBJECTS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+OBJECTS := $(patsubst src/%.cpp,$(OBJECT_ROOT)/%.o,$(SOURCES))
 RAW_ROM := $(BUILD_DIR)/$(TARGET).raw.sfc
 ELF := $(BUILD_DIR)/$(TARGET).elf
 MAP := $(BUILD_DIR)/$(TARGET).map
 ROM := $(TARGET).sfc
 
-.PHONY: all clean
+.PHONY: all clean FORCE
 
 all: $(ROM)
 
-$(BUILD_DIR)/%.o: src/%.cpp
+$(OBJECT_ROOT)/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "    [CXX] $<"
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -31,11 +32,13 @@ $(RAW_ROM): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -Wl,-Map,$(MAP) -o $@ $(OBJECTS)
 	mv $@.elf $(ELF)
 
-$(ROM): $(RAW_ROM) tools/finalize_rom.py tools/validate_rom.py
+$(ROM): FORCE $(RAW_ROM) tools/finalize_rom.py tools/validate_rom.py
 	python3 tools/finalize_rom.py --title "$(ROM_TITLE)" $(RAW_ROM) $@
 	python3 tools/validate_rom.py --title "$(ROM_TITLE)" $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(ROM)
+	rm -rf "$(BUILD_DIR)" "$(OBJECT_ROOT)" "$(ROM)"
+
+FORCE:
 
 -include $(OBJECTS:.o=.d)
